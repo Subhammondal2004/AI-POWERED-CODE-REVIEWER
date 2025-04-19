@@ -36,13 +36,26 @@ main .left{
   border-radius: 0.7rem;
   background-color: #212121;
   color:rgb(72, 165, 222);
+  overflow: auto;
 }
 
 main .left .review{
   position: absolute;
   bottom: 1rem;
   right: 1rem;
-  padding: 0.5rem 2rem;
+  padding: 0.3rem 1.7rem;
+  background-color: rgb(219, 219, 255);
+  color: black;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0.7rem;
+}
+main .left .fix{
+  position: absolute;
+  bottom: 1rem;
+  right: 8rem;
+  padding: 0.3rem 1.7rem;
   background-color: rgb(219, 219, 255);
   color: black;
   font-weight: 500;

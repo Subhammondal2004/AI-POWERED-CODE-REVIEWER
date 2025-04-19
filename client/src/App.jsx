@@ -9,9 +9,10 @@ import "highlight.js/styles/github-dark.css"
 import './App.css'
 
 function App() {
-  const [code, setCode] = useState(``)
-  const [review, setReview] = useState('')
-  const [isStreaming, setIsStreaming] = useState(false)
+  const [code, setCode] = useState(``);
+  const [review, setReview] = useState(``);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [suggestedCode, setSuggestedCode] = useState(``);
 
   useEffect(() => {
     prism.highlightAll()
@@ -20,10 +21,12 @@ function App() {
   async function reviewCode() {
     setReview('')
     setIsStreaming(true)
+    setSuggestedCode('')
 
     const response = await axios.post('http://localhost:3000/ai/get-response', { code })
 
     streamResponse(response.data)
+    setSuggestedCode(extractFixedCode(response.data));
   }
 
   //function to print the response word by word like openai.
@@ -35,11 +38,30 @@ function App() {
       setReview(prev => prev + (index > 0 ? ' ' : '') + words[index])
       index++
 
-      if (index >= words.length-1) {
+      if (index >= words.length - 1) {
         clearInterval(interval)
         setIsStreaming(false)
       }
     }, 50)
+  }
+
+  function extractFixedCode(reviewResponse) {
+    // Look for code between the "Recommended Fix:" section and the next section
+    const recommendedFixPattern = /✅\s*Recommended\s*Fix:[\s\S]*?```(?:javascript|js)?\s*([\s\S]*?)```/i;
+
+    const match = reviewResponse.match(recommendedFixPattern);
+
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+    return "";
+  }
+
+  function fixCode() {
+    if (suggestedCode) {
+      setCode(suggestedCode);
+      setSuggestedCode('');
+    }
   }
 
   return (
@@ -56,7 +78,7 @@ function App() {
               fontSize: 16,
               border: "1px solid #ddd",
               borderRadius: "5px",
-              height: "100%",
+              minHeight: "100%",
               width: "100%",
             }}
           />
@@ -64,6 +86,11 @@ function App() {
         <div onClick={reviewCode} className="review">
           Review
         </div>
+        {suggestedCode ? <div onClick={fixCode} className="fix">
+          Apply Fix
+        </div>
+          : ''
+        }
       </div>
       <div className="right">
         {isStreaming && <div className="typing">AI is typing...</div>}
