@@ -56,7 +56,7 @@ async function generateAIResponse(prompt) {
 
                 ✅ Recommended Fix:
 
-                        \`\`\`javascript
+                        \`\`\`
                 async function fetchData() {
                     try {
                         const response = await fetch('/api/data');

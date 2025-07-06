@@ -38,7 +38,26 @@ main .left{
   color:rgb(72, 165, 222);
   overflow: auto;
 }
-
+main .left .upload{
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.2rem 0.5rem;
+  background-color: rgb(219, 219, 255);
+  color: black;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0.7rem;
+}
+main .left .upload-file input{
+  position: absolute;
+  bottom: 1rem;
+  left: 0.5rem;
+  color: white;
+  font-weight:bolder;
+  padding: 0.2rem 1rem;
+}
 main .left .review{
   position: absolute;
   bottom: 1rem;

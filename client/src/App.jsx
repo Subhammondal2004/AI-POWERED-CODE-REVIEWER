@@ -13,6 +13,8 @@ function App() {
   const [review, setReview] = useState(``);
   const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedCode, setSuggestedCode] = useState(``);
+  const [upload, setUpload] = useState(false);
+  const [removefile, setRemovefile] = useState(true);
 
   useEffect(() => {
     prism.highlightAll()
@@ -22,11 +24,14 @@ function App() {
     setReview('')
     setIsStreaming(true)
     setSuggestedCode('')
+    setRemovefile(false)
 
     const response = await axios.post('http://localhost:3000/ai/get-response', { code })
 
     streamResponse(response.data)
-    setSuggestedCode(extractFixedCode(response.data));
+    setSuggestedCode(extractRecommendedFix(response.data));
+
+    console.log(code);
   }
 
   //function to print the response word by word like openai.
@@ -45,17 +50,24 @@ function App() {
     }, 50)
   }
 
-  function extractFixedCode(reviewResponse) {
-    // Look for code between the "Recommended Fix:" section and the next section
-    const recommendedFixPattern = /✅\s*Recommended\s*Fix:[\s\S]*?```(?:javascript|js)?\s*([\s\S]*?)```/i;
+  function extractRecommendedFix(feedbackText) {
+    const startMarker = "✅ Recommended Fix:";
+    const endMarkerRegex = /(?:💡|✔️|❌|Additional Notes|By addressing|Further Hardening)/;
 
-    const match = reviewResponse.match(recommendedFixPattern);
+    const startIndex = feedbackText.indexOf(startMarker);
+    if (startIndex === -1) return null;
 
-    if (match && match[1]) {
-      return match[1].trim();
-    }
-    return "";
-  }
+    // Slice from start marker onward
+    const slicedText = feedbackText.slice(startIndex + startMarker.length + 15);
+
+    // Find the end marker
+    const endMatch = endMarkerRegex.exec(slicedText);
+    const endIndex = endMatch ? endMatch.index : slicedText.length;
+
+    // Extract only the recommended fix section
+    return slicedText.slice(0, endIndex-6).trim();
+}
+
 
   function fixCode() {
     if (suggestedCode) {
@@ -63,6 +75,20 @@ function App() {
       setSuggestedCode('');
     }
   }
+
+  function uploadFile() {
+    setUpload(true);
+  }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await axios.post('http://localhost:3000/user/upload-file', formData);
+    setCode(res.data.content);
+  };
+
 
   return (
     <main>
@@ -82,6 +108,14 @@ function App() {
               width: "100%",
             }}
           />
+        </div>
+        <div className="upload-file">
+         { removefile ? <>{upload ? <input type="file" onChange={handleFileChange} />
+            : <div onClick={uploadFile} className="upload">Upload File</div>
+          }
+         </>
+          : <>+</>
+         }
         </div>
         <div onClick={reviewCode} className="review">
           Review
